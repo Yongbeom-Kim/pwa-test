@@ -1,0 +1,32 @@
+import { generateUniqueHash } from "../utils/generate-unique-hash";
+
+export const getHtml = (hash: string) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Basic PWA</title>
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="Basic PWA">
+        <link rel="apple-touch-icon" href="/assets/gallery_icon_1024_1024.png?${hash}">
+        <link rel="manifest" href="/manifest/${hash}.json?${hash}">
+      </head>
+      <body>
+        <h1>Hello, from your Express server!</h1>
+        <script>
+          document.addEventListener('DOMContentLoaded', () => {
+            const infoDiv = document.createElement('div');
+            const url = window.location.href;
+            const params = window.location.search;
+            infoDiv.innerHTML = \`
+              <p>Current URL: \${url}</p>
+              <p>Query Parameters: \${params}</p>
+            \`;
+            document.body.appendChild(infoDiv);
+          });
+        </script>
+      </body>
+    </html>
+  `;
+};
