@@ -31,9 +31,4 @@ tofu apply \
     -var="lambda_image_uri=${ecr_repository_url}@${image_digest}" \
     -auto-approve
 
-cloudfront_dist_id=$(tofu output -raw cloudfront_distribution_id)
-printf "\033[1;37mCloudFront distribution ID: \033[0m\033[33;1m${cloudfront_dist_id}\033[0m\n"
-printf "\033[1;37mInvalidating CloudFront cache...\033[0m\n"
-aws cloudfront create-invalidation --distribution-id ${cloudfront_dist_id} --paths "/*" 
-
 printf "\033[32;1mDeployment completed successfully!\033[0m\n"

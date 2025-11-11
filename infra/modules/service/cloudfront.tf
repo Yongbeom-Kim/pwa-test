@@ -28,7 +28,12 @@ resource "aws_cloudfront_distribution" "frontend" {
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
+
+    # use our no-cache policy
     cache_policy_id = aws_cloudfront_cache_policy.no_cache.id
+    origin_request_policy_id = aws_cloudfront_origin_request_policy.all_to_origin.id
+
+
     compress = true
   }
 
@@ -48,6 +53,7 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 }
 
+# new: no-cache policy
 resource "aws_cloudfront_cache_policy" "no_cache" {
   name        = "${var.cloudfront_cache_policy_name}-no-cache"
   min_ttl     = 0
@@ -56,16 +62,38 @@ resource "aws_cloudfront_cache_policy" "no_cache" {
 
   parameters_in_cache_key_and_forwarded_to_origin {
     cookies_config {
-      cookie_behavior = "all"
+      cookie_behavior = "none"
     }
     headers_config {
-      header_behavior = "all"
+      header_behavior = "none"
     }
     query_strings_config {
-      query_string_behavior = "all"
+      query_string_behavior = "none"
     }
+  }
+}
 
-    enable_accept_encoding_brotli = true
-    enable_accept_encoding_gzip   = true
+
+
+resource "aws_cloudfront_origin_request_policy" "all_to_origin" {
+  name = "${var.cloudfront_cache_policy_name}-all-to-origin"
+
+  cookies_config {
+    cookie_behavior = "all"
+  }
+  headers_config {
+    header_behavior = "whitelist"
+    headers {
+      items = [
+      "Accept",
+      "Accept-Language",
+      "Origin",
+      "User-Agent",
+      "Referer",
+      ]
+    }
+  }
+  query_strings_config {
+    query_string_behavior = "all"
   }
 }

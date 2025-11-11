@@ -20,5 +20,5 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 
 # Start the server with tsx
-CMD ["pnpm", "start"]
+CMD ["npm", "run", "start"]
 
