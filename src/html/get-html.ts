@@ -14,6 +14,7 @@ export const getHtml = (hash: string) => {
       </head>
       <body>
         <h1>Hello, from your Express server!</h1>
+        <h2>Your Unique Hash is: ${hash}</h2>
         <script>
           document.addEventListener('DOMContentLoaded', () => {
             const infoDiv = document.createElement('div');
