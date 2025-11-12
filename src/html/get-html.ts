@@ -1,6 +1,11 @@
 import { generateUniqueHash } from "../utils/generate-unique-hash";
+import { getManifest } from "./pwa-manifest";
 
 export const getHtml = (hash: string) => {
+
+  const manifestFileName = `${hash}.json`
+  const manifest = getManifest(manifestFileName)
+  const manifestUrl = `/manifest/${manifestFileName}?${hash}`
   return `
     <!DOCTYPE html>
     <html>
@@ -10,11 +15,14 @@ export const getHtml = (hash: string) => {
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="Basic PWA">
         <link rel="apple-touch-icon" href="/assets/gallery_icon_1024_1024.png?${hash}">
-        <link rel="manifest" href="/manifest/${hash}.json?${hash}">
+        <link rel="manifest" href="${manifestUrl}">
       </head>
       <body>
         <h1>Hello, from your Express server!</h1>
         <h2>Your Unique Hash is: ${hash}</h2>
+        <h2>PWA Manifest URL: ${manifestUrl}</h2>
+        <h2>Manifest Start URL: ${manifest.start_url}</h2>
+        <h2>Manifest Icon: ${manifest.icons[0]!.src}</h2>
         <script>
           document.addEventListener('DOMContentLoaded', () => {
             const infoDiv = document.createElement('div');
