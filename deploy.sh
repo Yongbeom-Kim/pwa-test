@@ -19,8 +19,8 @@ printf "\033[1;37mBuilding Docker image...\033[0m\n"
 docker build \
     --build-arg VITE_PUBLIC_POSTHOG_KEY="${VITE_PUBLIC_POSTHOG_KEY}" \
     --build-arg VITE_PUBLIC_POSTHOG_HOST="${VITE_PUBLIC_POSTHOG_HOST}" \
-    -t personal-blog-server .  
-docker tag personal-blog-server:latest ${ecr_repository_url}:latest
+    -t pwa-test-server .  
+docker tag pwa-test-server:latest ${ecr_repository_url}:latest
 docker push ${ecr_repository_url}:latest
 
 ecr_repository_name=$(tofu output -raw ecr_repository_name)
