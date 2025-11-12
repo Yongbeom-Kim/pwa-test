@@ -7,35 +7,53 @@ import { generateUniqueHash } from './utils/generate-unique-hash';
 const app = express();
 const port = 3000;
 
-// Logging middleware for all requests to log method, path, query, and headers
+// Logging middleware - one consolidated log per request and response
 app.use((req: Request, res: Response, next) => {
-  console.log('--- Incoming Request ---');
-  console.log('URL:', req.originalUrl);
-  console.log('Method:', req.method);
-  console.log('Path:', req.path);
-  console.log('Query:', req.query);
-  console.log('Headers:', req.headers);
-
-  // Capture response info
-  const oldSend = res.send;
-  res.send = function (body?: any): Response {
-    console.log('--- Outgoing Response ---');
-    console.log('Status:', res.statusCode);
-    // Try to log the actual response type safely
-    if (typeof body === 'string') {
-      console.log('Response Body (truncated):', body.length > 500 ? body.slice(0, 500) + '...[truncated]' : body);
-    } else if (typeof body === 'object') {
-      try {
-        const bodyJson = JSON.stringify(body);
-        console.log('Response Body (truncated):', bodyJson.length > 500 ? bodyJson.slice(0, 500) + '...[truncated]' : bodyJson);
-      } catch {
-        console.log('Response Body: [Non-serializable object]');
-      }
-    } else {
-      console.log('Response Body:', body);
-    }
-    return oldSend.apply(this, arguments as any);
+  const startTime = Date.now();
+  
+  // Store metadata on request for later use
+  (req as any).analyticsStartTime = startTime;
+  
+  // Log request - single consolidated JSON log
+  const requestLog = {
+    type: 'request',
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    url: req.originalUrl,
+    path: req.path,
+    queryParams: req.query,
+    params: req.params,
+    headers: {
+      'user-agent': req.get('user-agent'),
+      'referer': req.get('referer'),
+      'content-type': req.get('content-type'),
+      'accept': req.get('accept'),
+    },
+    ip: req.ip || req.socket.remoteAddress || 'unknown',
   };
+  console.log(JSON.stringify(requestLog));
+
+  // Capture response finish to log response
+  res.on('finish', () => {
+    const responseTime = Date.now() - startTime;
+    const hash = (req as any).analyticsHash;
+    
+    // Log response - single consolidated JSON log
+    const responseLog = {
+      type: 'response',
+      timestamp: new Date().toISOString(),
+      method: req.method,
+      path: req.path,
+      queryParams: req.query,
+      hash: hash || undefined,
+      statusCode: res.statusCode,
+      responseTime: `${responseTime}ms`,
+      headers: {
+        'content-type': res.get('content-type'),
+      },
+    };
+    console.log(JSON.stringify(responseLog));
+  });
 
   next();
 });
@@ -45,10 +63,8 @@ app.use('/assets', express.static(path.join(import.meta.dirname, '../assets')));
 app.get('/', (req: Request, res: Response) => {
   const hash = generateUniqueHash();
   
-  // Log request parameters specific to this endpoint
-  console.log('Route: /');
-  console.log('Params:', req.params);
-  console.log('Query:', req.query);
+  // Store hash for response logging
+  (req as any).analyticsHash = hash;
 
   res.send(getHtml(hash));
 });
@@ -56,10 +72,6 @@ app.get('/', (req: Request, res: Response) => {
 app.get('/manifest/:manifestPathParameter', (req: Request, res: Response) => {
   const { params } = req;
   const manifestFileName = params['manifestPathParameter']!;
-  console.log('Route: /manifest/:manifestPathParameter');
-  console.log('Params:', params);
-  console.log('manifestPathParameter:', manifestFileName);
-  console.log('Query:', req.query);
 
   res.json(getManifest(manifestFileName));
 });
@@ -67,10 +79,9 @@ app.get('/manifest/:manifestPathParameter', (req: Request, res: Response) => {
 app.get('/:hash', (req: Request, res: Response) => {
   const { params } = req;
   const hash = params['hash']!;
-  console.log('Route: /:hash');
-  console.log('Params:', params);
-  console.log('Hash:', hash);
-  console.log('Query:', req.query);
+  
+  // Store hash for response logging
+  (req as any).analyticsHash = hash;
 
   res.send(getHtml(hash));
 });
