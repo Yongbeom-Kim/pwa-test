@@ -8,13 +8,13 @@ export const getManifest = (manifestFileName: string) => {
   return {
     name: "Basic PWA",
     short_name: "PWA",
-    start_url: `/${manifestFileStem}?vesion=old`,
+    start_url: `/${manifestFileStem}?vesion=new`,
     display: "standalone",
     background_color: "#fff",
     description: "A basic PWA.",
     icons: [
       {
-        src: `/assets/gallery_icon_1024_1024.png?manifestFileName=${manifestFileName}`,
+        src: `/assets/facebook_icon_1024_1024.png?manifestFileName=${manifestFileName}`,
         sizes: "1024x1024",
         type: "image/png",
       },
