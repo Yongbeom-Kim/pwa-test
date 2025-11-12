@@ -14,7 +14,7 @@ provider "aws" {
   default_tags {
     tags = {
       managed_by = "OpenTofu"
-      application = "personal-blog"
+      application = "pwa-test"
       environment = var.environment
     }
   }
